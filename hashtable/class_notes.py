@@ -21,12 +21,11 @@ class HashTable:
     """
 
     def __init__(self, capacity):
+        #self.bucket_array = [None] * capacity
+        #self.capacity = capacity
+        #self.item_count = 0
         self.capacity = max(capacity, MIN_CAPACITY)
-        
-        self.storage = [None] * capacity
-        
-        self.item_count = 0
-        
+        self.storage = [None] * self.capacity
         self.load = 0
 
 
@@ -144,83 +143,65 @@ class HashTable:
     def put(self, key, value):
         """
         Store the value with the given key.
+
         Hash collisions should be handled with Linked List Chaining.
+
         Implement this.
         """
-        # key hashed is from djb2 function
-        key_hash = self.djb2(key)
+        # hash the key - self.hash_index will modulo it
+        idx = self.hash_index(key)
 
-        # new index is modulo hash to num of slots
-        idx = key_hash % self.get_num_slots()
+        # insert the value at that location
+        self.storage[idx] = value
 
-        # new node created from Class
-        new_node = HashTableEntry(key, value)
-        
-        # existing node referenced at storage/array index
-        this_node = self.storage[idx]
+        # adding to counter in init
+        self.load += 1
 
-        # if node exists
-        if this_node:
-            # last node is none
-            last_node = None
-            # while node exists
-            while this_node is not None:
-                # if existing node equals our key
-                if this_node.key == key:
-                    # set it to that value
-                    this_node.value = value
-                    # exit
-                    return
-                # set last node to existing node
-                last_node = this_node
-                this_node = this_node.next
-            # if not, make next node the new node
-            last_node.next = new_node
-        else:
-            # else the current index is the new node
-            self.storage[idx] = new_node
 
     def delete(self, key):
         """
         Remove the value stored with the given key.
+
         Print a warning if the key is not found.
+
         Implement this.
         """
+        # hash the jey to find the index
+        idx = self.hash_index(key)
 
-        key_hash = self.djb2(key)
-        idx = key_hash % self.get_num_slots()
-        this_node = self.storage[idx]
+        #check for collision
+        if self.storage[idx] != None:
+            print('Warning! Collision!!!')
+
+        if self.storage[idx] == None:
+            print('Warning! No key!!!')
         
-        if this_node:
-            
-            last_node = None
-            
-            while this_node is not None:
-                
-                if this_node.key == key:
-                    if last_node:
-                        last_node.next = this_node.next
-                    else:
-                        self.storage[idx] = this_node.next
-                
-                last_node = this_node
-                this_node = this_node.next
+        else:
+            self.storage[idx] = None
+
+            # subtracting from counter in init
+            self.load -= 1
+
 
     def get(self, key):
         """
         Retrieve the value stored with the given key.
+
         Returns None if the key is not found.
+
         Implement this.
         """
         key_hash = self.djb2(key)
-        idx = key_hash % self.get_num_slots()
-        this_node = self.storage[idx]
+        storage_index = key_hash % self.get_num_slots()
 
-        if this_node is not None:
-            while this_node:
-                if this_node.key == key:
-                    return this_node.value
-                this_node = this_node.next
+        existing_node = self.storage[storage_index]
+        
+        if existing_node:
+            while existing_node:
+                if existing_node == key:
+                    return existing_node.value
+                existing_node = existing_node.next
+
         return None
 
 
@@ -231,15 +212,7 @@ class HashTable:
 
         Implement this.
         """
-
-        cur = self.storage
-        
-        self.storage = [None] * new_capacity
-        
-        for idx in cur:
-            while idx:
-                self.put(idx.key, idx.value)
-                idx = idx.next
+        # Your code here
 
 
 
